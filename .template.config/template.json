@@ -1,0 +1,18 @@
+﻿{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Lionel",
+  "classifications": [
+    "Avalonia",
+    "C#",
+    "Markup"
+  ],
+  "name": "Pure Avalonia Markup App",
+  "identity": "Avalonia.CSharp.Markup.Template",
+  "shortName": "avac",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "AvaloniaApplication1",
+  "preferNameDirectory": true
+}
