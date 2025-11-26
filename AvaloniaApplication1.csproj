@@ -30,6 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="ui\components\" />
       <Folder Include="ui\dialogs\" />
       <Folder Include="ui\pages\second\" />
     </ItemGroup>

@@ -1,44 +1,49 @@
 ﻿using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
-using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Markup.Declarative;
 using Avalonia.Media;
-using AvaloniaApplication1.viewmodel;
+using Avalonia.Data;
+using AvaloniaApplication1.vm; // 假设 TodoItem 在这里
 
 namespace AvaloniaApplication1.ui.pages.main;
 
+// 假设组件已绑定到 _vm (MainViewModel)
 public class GridListComponent : ComponentBase
 {
     private MainViewModel _vm = new();
 
-    private delegate TControl FuncTemplate1<TControl>(TControl control);
-
     protected override object Build()
     {
-        return new ScrollViewer()
-            .Content(
-                new ItemsControl()
-                    // 绑定数据源
-                    .ItemsSource(new Binding(nameof(_vm.Items)) { Source = _vm })
-                    // 🔥🔥🔥【核心核心核心】🔥🔥🔥
-                    // 修改 ItemsPanel 为 UniformGrid，并强制设为 2 列
-                    .ItemsPanel(new FuncTemplate<Panel>(() => new UniformGrid().Columns(2)))
-                    .ItemTemplate<string, ItemsControl>(item =>
-                        new Border()
-                            .Margin(5) // 格子之间的间距
-                            .Padding(20)
-                            .CornerRadius(8)
-                            .Background(Brushes.White)
-                            .BoxShadow(new BoxShadows(new BoxShadow { Blur = 5, Color = Color.Parse("#33000000") }))
-                            .Child(
-                                new StackPanel()
-                                    .Children(
-                                        new TextBlock().Text("📦").FontSize(24)
-                                            .HorizontalAlignment(HorizontalAlignment.Center),
-                                        new TextBlock().Text(item).HorizontalAlignment(HorizontalAlignment.Center)
-                                    )
+        return new ListBox()
+            .ItemsSource(new Binding(nameof(_vm.Items)) { Source = _vm })
+            .Margin(10)
+            .Padding(0)
+            .ItemTemplate<TodoItem>(item => // item 依然是 TodoItem 对象引用
+                new Border()
+                    .Padding(15)
+                    .Margin(0, 0, 0, 5)
+                    .Background(Brushes.White)
+                    .CornerRadius(5)
+                    .BoxShadow(new BoxShadows(new BoxShadow { Blur = 3, Color = Color.Parse("#15000000") }))
+                    .Child(
+                        new Grid()
+                            .Cols("*, Auto")
+                            .Children(
+                                // 🔥 修正 1：改为 Data Binding
+                                new TextBlock()
+                                    .Col(0)
+                                    .Text(new Binding(nameof(item.Content))) // 👈 绑定到当前 DataContext 的 Content 属性
+                                    .VerticalAlignment(VerticalAlignment.Center),
+
+                                // 删除按钮
+                                new Button()
+                                    .Col(1)
+                                    .Content("🗑️ 删除")
+                                    .Background(Brushes.IndianRed)
+                                    .Foreground(Brushes.White)
+                                    .VerticalAlignment(VerticalAlignment.Center)
+                                    // ✅ 修正 2：OnClick 内部依然安全，因为它只是捕获了 item 对象，没有读取 item 的属性
+                                    .OnClick(_ => { _vm.RemoveItem(item); })
                             )
                     )
             );
