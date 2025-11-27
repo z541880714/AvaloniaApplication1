@@ -1,13 +1,5 @@
-﻿using System;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Templates;
-using Avalonia.Layout;
-using Avalonia.Markup.Declarative;
-using Avalonia.Media;
-using Avalonia.Data;
-using Avalonia.Input;
 using AvaloniaApplication1.ui.pages.main;
 
 namespace AvaloniaApplication1.ui;

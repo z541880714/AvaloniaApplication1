@@ -1,9 +1,8 @@
 ﻿using System;
-using AvaloniaApplication1.vm;
+using NavigationStore = AvaloniaApplication1.global.NavigationStore;
 
 namespace AvaloniaApplication1.ui.pages.main;
 
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Markup.Declarative;
@@ -27,27 +26,9 @@ public class MainShell : ComponentBase
                 // === 左侧侧边栏 (Sidebar) ===
                 new Border()
                     .Col(0)
-                    .Background(Brushes.DarkSlateGray)
-                    .Padding(10)
+                    .Background(Brushes.Aquamarine)
                     .Child(
-                        new StackPanel()
-                            .Spacing(5)
-                            .Children(
-                                // 标题
-                                new TextBlock()
-                                    .Text("我的 App")
-                                    .FontSize(24)
-                                    .Foreground(Brushes.White)
-                                    .HorizontalAlignment(HorizontalAlignment.Center)
-                                    .Margin(0, 0, 0, 20),
-
-                                // 菜单按钮 (使用 SwitchTo)
-                                MenuButton("🏠 首页", () => NavigationStore.Instance.SwitchTo(() => new HomeComponent())),
-                                MenuButton("📋 列表",
-                                    () => NavigationStore.Instance.SwitchTo(() => new GridListComponent())),
-                                MenuButton("⚙️ 设置",
-                                    () => NavigationStore.Instance.SwitchTo(() => new SettingsComponent()))
-                            )
+                        new SideMenu()
                     ),
 
                 // === 右侧内容区 (Content) ===

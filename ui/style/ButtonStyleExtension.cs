@@ -5,7 +5,7 @@ using Avalonia.Media;
 
 namespace AvaloniaApplication1.ui.style;
 
-public static class ButtonStyle
+public static class ButtonStyleExtension
 {
     public static T ListItemButtonStyle<T>(this T button, IBrush? background = null) where T : Button
     {

@@ -3,14 +3,12 @@ using Avalonia.Layout;
 using Avalonia.Markup.Declarative;
 using Avalonia.Media;
 using Avalonia.Data;
-using AvaloniaApplication1.vm; // 假设 TodoItem 在这里
 
 namespace AvaloniaApplication1.ui.pages.main;
 
-// 假设组件已绑定到 _vm (MainViewModel)
 public class GridListComponent : ComponentBase
 {
-    private MainViewModel _vm = new();
+    private GridListComponentVm _vm = new();
 
     protected override object Build()
     {
@@ -26,19 +24,32 @@ public class GridListComponent : ComponentBase
                     .CornerRadius(5)
                     .BoxShadow(new BoxShadows(new BoxShadow { Blur = 3, Color = Color.Parse("#15000000") }))
                     .Child(
-                        new Grid()
-                            .Cols("*, Auto")
+                        new Grid
+                            {
+                                ColumnSpacing = 10
+                            }
+                            .Cols("*, Auto, Auto")
                             .Children(
                                 // 🔥 修正 1：改为 Data Binding
                                 new TextBlock()
                                     .Col(0)
                                     .Text(new Binding(nameof(item.Content))) // 👈 绑定到当前 DataContext 的 Content 属性
                                     .VerticalAlignment(VerticalAlignment.Center),
-
-                                // 删除按钮
                                 new Button()
                                     .Col(1)
+                                    .Content("更新")
+                                    .HorizontalContentAlignment(HorizontalAlignment.Center)
+                                    .Width(100)
+                                    .Background(Brushes.DarkCyan)
+                                    .Foreground(Brushes.White)
+                                    .VerticalAlignment(VerticalAlignment.Center)
+                                    .OnClick(_ => { _vm.UpdateItem(item); }),
+                                // 删除按钮
+                                new Button()
+                                    .Col(2)
                                     .Content("🗑️ 删除")
+                                    .HorizontalContentAlignment(HorizontalAlignment.Center)
+                                    .Width(100)
                                     .Background(Brushes.IndianRed)
                                     .Foreground(Brushes.White)
                                     .VerticalAlignment(VerticalAlignment.Center)
