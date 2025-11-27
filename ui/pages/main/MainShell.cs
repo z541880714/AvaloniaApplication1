@@ -1,5 +1,5 @@
 ﻿using System;
-using NavigationStore = AvaloniaApplication1.global.NavigationStore;
+using global::AvaloniaApplication1.global;
 
 namespace AvaloniaApplication1.ui.pages.main;
 
@@ -15,7 +15,7 @@ public class MainShell : ComponentBase
     public MainShell()
     {
         // 默认显示首页
-        NavigationStore.Instance.SwitchTo(() => new HomeComponent());
+        ZNavigator.Instance.SwitchTo(() => new HomeComponent());
     }
 
     protected override object Build()
@@ -39,9 +39,9 @@ public class MainShell : ComponentBase
                     .Background(Brushes.White) // 内容区背景
 
                     // 🔥 绑定全局导航存储的 CurrentView
-                    .Content(new Binding(nameof(NavigationStore.Instance.CurrentView))
+                    .Content(new Binding(nameof(ZNavigator.Instance.CurrentView))
                     {
-                        Source = NavigationStore.Instance
+                        Source = ZNavigator.Instance
                     })
 
                     // ✨ 加点动画：淡入淡出 (CrossFade)

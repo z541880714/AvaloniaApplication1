@@ -179,7 +179,7 @@ public class SideMenu : ComponentBase
                                     {
                                         // 这里执行工厂方法创建 View
                                         // Router.Navigate(view);
-                                        NavigationStore.Instance.SwitchTo(() => childNode.Action(), childNode.NavKey());
+                                        ZNavigator.Instance.SwitchTo(() => childNode.Action(), childNode.NavKey());
                                     }
                                 })
                         ).ToArray<Control>()

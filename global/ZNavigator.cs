@@ -5,9 +5,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AvaloniaApplication1.global;
 
-public partial class NavigationStore : ObservableObject
+public partial class ZNavigator : ObservableObject
 {
-    public static NavigationStore Instance { get; } = new();
+    public static ZNavigator Instance { get; } = new();
 
     [ObservableProperty] private Control? _currentView;
 
