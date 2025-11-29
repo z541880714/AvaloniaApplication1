@@ -47,7 +47,7 @@ public partial class ZNavigator : ObservableObject
 
     private ZNavigator()
     {
-        CurrentView = Router.FindMain();
+        CurrentView = Router.FindMainControl();
     }
 
     // --- 场景 A & B: 详情页堆栈 (保持不变) ---

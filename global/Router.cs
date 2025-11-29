@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using AvaloniaApplication1.ui.components;
@@ -12,9 +13,9 @@ public class Router
     [
         new("1-组件样例", children:
         [
-            new("主页", action: () => new GridListComponent(), isMain: true),
+            new("主页", action: () => new GridListComponent()),
             new("listBox", action: () => new ImagePageListBox()),
-            new("listRepeater", action: () => new ImagePageRepeater()),
+            new("listRepeater", action: () => new ImagePageRepeater(), isMain: true),
         ]),
 
         new("2-视觉渲染", children:
@@ -25,27 +26,49 @@ public class Router
         ]),
     ];
 
-    public static Control FindMain()
+    private static NavNode? FindMainNode(NavNode node)
     {
-        List<NavNode> nodeList = new();
+        Console.WriteLine($"name:{node.Name}, isMain:{node.IsMain}, action is null:{node.Action == null}");
+        if (node is { IsMain: true, Action: not null }) return node;
+        foreach (var child in node.Children)
+        {
+            var mainNode = FindMainNode(child);
+            if (mainNode is { Action: not null })
+            {
+                return mainNode;
+            }
+        }
+
+        return null;
+    }
+
+    public static string FindMainNodeId()
+    {
         foreach (var parentNode in RouterConfig)
         {
-            if (parentNode.Children.Count == 0)
+            var mainNode = FindMainNode(parentNode);
+            if (mainNode is { Action: not null })
             {
-                nodeList.Add(parentNode);
-            }
-            else
-            {
-                nodeList.AddRange(parentNode.Children);
+                parentNode.StretchState = true;
+                return mainNode.Id;
             }
         }
 
-        var mainNode = nodeList.FirstOrDefault(it => it?.IsMain ?? false, null);
-        if (mainNode == null || mainNode.Action == null)
+        throw new Exception("must has a  main  node");
+    }
+
+    public static Control FindMainControl()
+    {
+        foreach (var parentNode in RouterConfig)
         {
-            return new GridListComponent();
+            var mainNode = FindMainNode(parentNode);
+            if (mainNode is { Action: not null })
+            {
+                parentNode.StretchState = true;
+                return mainNode.Action();
+            }
         }
 
-        return mainNode.Action();
+        throw new Exception("must has a  main  node");
     }
 }

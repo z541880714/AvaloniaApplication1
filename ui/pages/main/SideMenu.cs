@@ -21,6 +21,7 @@ public class SideMenu : ComponentBase
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        _vm.SelectItemId = Router.FindMainNodeId();
         DataContext = _vm;
     }
 
