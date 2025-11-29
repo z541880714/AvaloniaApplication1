@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
@@ -18,13 +19,16 @@ public class ImagePageRepeater : ComponentBase
             .Content(
                 new ItemsRepeater
                 {
+                    HorizontalAlignment = HorizontalAlignment.Center,
                     Layout = new UniformGridLayout
                     {
-                        MinItemWidth = 200,
-                        MinItemHeight = 200,
-                        ItemsStretch = UniformGridLayoutItemsStretch.Uniform,
                         MaximumRowsOrColumns = 3,
-                        MinColumnSpacing = 10,
+
+                        // 3. 坚决使用 None，保证每个格子宽度雷打不动
+                        ItemsStretch = UniformGridLayoutItemsStretch.Fill,
+
+                        MinColumnSpacing = 20,
+                        MinRowSpacing = 20,
                     },
                     // 🔥 必须写在大括号里面！
                     // 语法：[!类名.静态属性名] = Binding
@@ -33,11 +37,7 @@ public class ImagePageRepeater : ComponentBase
 
                     ItemTemplate = new FuncDataTemplate<ImageData>((data, ns) =>
                         new Grid()
-                            {
-                                RowSpacing = 10,
-                                ColumnSpacing = 10,
-                            }
-                            .Rows("*,*")
+                            .Rows("200, 60")
                             .Children(
                                 new AsyncImageView()
                                     .Row(0)

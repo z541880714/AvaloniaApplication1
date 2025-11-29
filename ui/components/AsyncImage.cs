@@ -47,7 +47,8 @@ public class AsyncImageView : TemplatedControl
     // 静态 HttpClient 复用 (避免端口耗尽)
     private static readonly HttpClient HttpClient = new();
 
-    private static ZLruCache<string, Bitmap> _zLruCache = new(200, it => it.Dispose());
+    // private static ZLruCache<string, Bitmap> _zLruCache = new(200, it => it.Dispose());
+    private static ZLruCache<string, Bitmap> _zLruCache = new(1000);
 
 
     #region Avalonia Properties (对外公开的属性)

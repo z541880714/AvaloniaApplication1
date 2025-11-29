@@ -15,7 +15,9 @@ namespace AvaloniaApplication1.ui.components;
 public class ImagePageListBox : ComponentBase
 {
     private readonly ImagePageVm _vm = new();
-    private readonly ZLruCache<string, Bitmap> _lruCache = new(200, it => it.Dispose());
+
+    // private readonly ZLruCache<string, Bitmap> _lruCache = new(200, it => it.Dispose());
+    private readonly ZLruCache<string, Bitmap> _lruCache = new(500);
 
     protected override object Build()
     {
