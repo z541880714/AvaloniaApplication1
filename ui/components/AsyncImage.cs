@@ -227,27 +227,16 @@ public class AsyncImageView : TemplatedControl
             }
             catch (OperationCanceledException)
             {
-                bitmap?.Dispose();
             }
             catch (Exception ex)
             {
-                bitmap?.Dispose();
-                if (token.IsCancellationRequested)
-                {
-                    Console.WriteLine("Exception: " + ex.Message +
-                                      $"token cancelState: ${token.IsCancellationRequested}");
-                }
-
-                _state.ErrorMessage = ex.Message;
-                _state.HasError = true;
-                _state.IsLoading = false;
                 // 切回 UI 线程更新失败状态
-                // Dispatcher.UIThread.Post(() =>
-                // {
-                //     _state.ErrorMessage = ex.Message;
-                //     _state.HasError = true;
-                //     _state.IsLoading = false;
-                // });
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _state.ErrorMessage = ex.Message;
+                    _state.HasError = true;
+                    _state.IsLoading = false;
+                });
             }
         }, token);
     }

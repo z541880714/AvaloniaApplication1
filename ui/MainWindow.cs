@@ -9,7 +9,9 @@ public class MainWindow : Window
     public MainWindow()
     {
         Title = "Avalonia MVU";
-        var primaryScreen = this.Screens.Primary;
+        Width = 800;
+        Height = 600;
+        var primaryScreen = Screens.Primary;
         if (primaryScreen != null)
         {
             var workingArea = primaryScreen.WorkingArea;
@@ -19,12 +21,6 @@ public class MainWindow : Window
                 workingArea.X + (workingArea.Width / 4),
                 workingArea.Y + (workingArea.Height / 4)
             );
-        }
-        else
-        {
-            // 如果获取屏幕信息失败，设置默认回退值
-            Width = 800;
-            Height = 600;
         }
 
         // 使用 Grid 确保布局撑满

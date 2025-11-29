@@ -25,7 +25,7 @@ public partial class ImageData : ObservableObject
 
 public partial class ImagePageVm : ObservableObject
 {
-    private string _imgDir = @"D:\__4_scrawl\images";
+    private string _imgDir = Path.Combine(ZEnv.ProjectRoot.FullName, "res", "images");
     [ObservableProperty] ObservableCollection<ImageData> _pathList = new();
     private readonly Channel<bool> _signalChannel = Channel.CreateBounded<bool>(1);
 

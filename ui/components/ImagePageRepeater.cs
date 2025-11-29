@@ -45,6 +45,7 @@ public class ImagePageRepeater : ComponentBase
                                 new TextBlock()
                                     .Row(1)
                                     .Text(new Binding(nameof(ImageData.Name)))
+                                    .HorizontalAlignment(HorizontalAlignment.Center)
                             )
                     )
                 }

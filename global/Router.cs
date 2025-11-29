@@ -10,14 +10,14 @@ public class Router
 {
     public static List<NavNode> RouterConfig =
     [
-        new("1*****", children:
+        new("1-组件样例", children:
         [
-            new("1-1", action: () => new GridListComponent(), isMain: true),
-            new("1-2", action: () => new ImagePageListBox()),
-            new("1-3", action: () => new ImagePageRepeater()),
+            new("主页", action: () => new GridListComponent(), isMain: true),
+            new("listBox", action: () => new ImagePageListBox()),
+            new("listRepeater", action: () => new ImagePageRepeater()),
         ]),
 
-        new("2*****", children:
+        new("2-视觉渲染", children:
         [
             new("2-1", action: () => new HomeComponent("2-1")),
             new("2-2", action: () => new HomeComponent("2-2")),
