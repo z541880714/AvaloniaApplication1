@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <LangVersion>default</LangVersion>
+        <ApplicationIcon>assets\app.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -30,7 +31,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="assets\" />
         <Folder Include="ui\dialogs\"/>
         <Folder Include="ui\pages\second\"/>
     </ItemGroup>
@@ -39,5 +39,10 @@
         <None Update="assets\**">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <!--设置图标资源..-->
+    <ItemGroup>
+        <AvaloniaResource Include="assets\app.ico"/>
     </ItemGroup>
 </Project>
