@@ -1,15 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using Avalonia.Controls;
+using AvaloniaApplication1.ui.pages.main;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AvaloniaApplication1.global;
+
+using MenuAction = Func<Control>;
+
+public partial class NavNode : ObservableObject
+{
+    public readonly string Id = Guid.NewGuid().ToString();
+    public readonly string Name;
+    public readonly MenuAction? Action;
+    public readonly bool IsMain;
+    public List<NavNode> Children;
+    public bool HasStretchIcon => Children.Count > 0;
+
+    [ObservableProperty] private bool _stretchState = false;
+
+    public NavNode(string name,
+        bool isMain = false,
+        MenuAction? action = null,
+        List<NavNode>? children = null)
+    {
+        Name = name;
+        Action = action;
+        Children = children ?? [];
+        IsMain = isMain;
+    }
+}
 
 public partial class ZNavigator : ObservableObject
 {
     public static ZNavigator Instance { get; } = new();
 
-    [ObservableProperty] private Control? _currentView;
+    [ObservableProperty] private Control _currentView;
 
     // 1. 历史栈 (依然保留，用于 Push/Pop 的详情页后退功能)
     private readonly Stack<Control> _history = new();
@@ -17,6 +43,12 @@ public partial class ZNavigator : ObservableObject
     // 2. 【核心新增】页面缓存池 (Keep-Alive)
     // Key: 页面类型 (Type) -> Value: 页面实例 (Control)
     private readonly Dictionary<string, Control> _viewCache = new();
+
+
+    private ZNavigator()
+    {
+        CurrentView = Router.FindMain();
+    }
 
     // --- 场景 A & B: 详情页堆栈 (保持不变) ---
     // 详情页通常不需要缓存，因为每次点开的数据可能不一样
@@ -55,11 +87,6 @@ public partial class ZNavigator : ObservableObject
             System.Diagnostics.Debug.WriteLine($"[Cache] 创建新实例: {navKey}");
             targetView = factory();
             _viewCache[navKey] = targetView;
-        }
-        else
-        {
-            // 找到了：直接复用，状态全都在！
-            System.Diagnostics.Debug.WriteLine($"[Cache] 复用旧实例: {navKey}");
         }
 
         // 3. 切换显示

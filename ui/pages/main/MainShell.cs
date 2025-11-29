@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using global::AvaloniaApplication1.global;
 
 namespace AvaloniaApplication1.ui.pages.main;
@@ -12,12 +13,6 @@ using Avalonia.Animation; // 用于动画
 
 public class MainShell : ComponentBase
 {
-    public MainShell()
-    {
-        // 默认显示首页
-        ZNavigator.Instance.SwitchTo(() => new HomeComponent());
-    }
-
     protected override object Build()
     {
         return new Grid()
@@ -37,14 +32,7 @@ public class MainShell : ComponentBase
                     .Col(1)
                     .Padding(20)
                     .Background(Brushes.White) // 内容区背景
-
-                    // 🔥 绑定全局导航存储的 CurrentView
-                    .Content(new Binding(nameof(ZNavigator.Instance.CurrentView))
-                    {
-                        Source = ZNavigator.Instance
-                    })
-
-                    // ✨ 加点动画：淡入淡出 (CrossFade)
+                    .Content(ZNavigator.Instance.CurrentView!, bindingSource: ZNavigator.Instance)
                     .PageTransition(new CrossFade(TimeSpan.FromMilliseconds(300)))
 
                 // 方案 B: 左右滑动 (现代，动感) - 强烈推荐试试这个！

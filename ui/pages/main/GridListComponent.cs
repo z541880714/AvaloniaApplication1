@@ -13,9 +13,8 @@ public class GridListComponent : ComponentBase
     protected override object Build()
     {
         return new ListBox()
-            .ItemsSource(new Binding(nameof(_vm.Items)) { Source = _vm })
             .Margin(10)
-            .Padding(0)
+            .ItemsSource(new Binding(nameof(_vm.Items)) { Source = _vm })
             .ItemTemplate<TodoItem>(item => // item 依然是 TodoItem 对象引用
                 new Border()
                     .Padding(15)

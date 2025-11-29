@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Reactive;
-using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -13,54 +10,19 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Declarative;
 using Avalonia.Media;
-using CommunityToolkit.Mvvm.ComponentModel;
 using global::AvaloniaApplication1.global;
 
 namespace AvaloniaApplication1.ui.pages.main;
 
-public delegate Control MenuAction();
-
-public partial class MenuNode(
-    string name,
-    MenuAction? action = null,
-    List<MenuNode>? children = null
-)
-    : ObservableObject
-{
-    public readonly string Name = name;
-    public readonly MenuAction? Action = action;
-    public List<MenuNode> Children = children ?? [];
-    public bool HasStretchIcon => Children.Count > 0;
-
-    [ObservableProperty] private bool _stretchState = false;
-
-    public string NavKey()
-    {
-        if (action == null) return "";
-        string typeName = action().GetType().Name;
-        return $"{typeName}:{Name}";
-    }
-}
-
 public class SideMenu : ComponentBase
 {
-    public List<MenuNode> _navigateConfig =
-    [
-        new("1*****", children:
-        [
-            new("1-1", () => new GridListComponent()),
-            new("1-2", () => new HomeComponent("1-2")),
-            new("1-3", () => new HomeComponent("1-3")),
-        ]),
+    private SideMenuVm _vm = new();
 
-        new("2*****", children:
-        [
-            new("2-1", () => new HomeComponent("2-1")),
-            new("2-2", () => new HomeComponent("2-2")),
-            new("2-3", () => new HomeComponent("2-3")),
-        ]),
-    ];
-
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        DataContext = _vm;
+    }
 
     protected override object Build()
     {
@@ -70,12 +32,12 @@ public class SideMenu : ComponentBase
                     .Spacing(10)
                     .Orientation(Orientation.Vertical)
                     .Children(
-                        _navigateConfig.Select(CreateGroupUi).ToArray()
+                        Router.RouterConfig.Select(CreateGroupUi).ToArray()
                     )
             );
     }
 
-    private Control CreateGroupUi(MenuNode parentNode)
+    private Control CreateGroupUi(NavNode parentNode)
     {
         // 定义 Grid 引用，方便在事件里修改它
         Grid? headerGrid = null;
@@ -134,7 +96,7 @@ public class SideMenu : ComponentBase
                                     new RotateTransform()
                                         {
                                             [!RotateTransform.AngleProperty] =
-                                                new Binding(nameof(MenuNode.StretchState))
+                                                new Binding(nameof(NavNode.StretchState))
                                                 {
                                                     Source = parentNode,
                                                     Converter = new FuncValueConverter<bool, double>(expanded =>
@@ -151,36 +113,30 @@ public class SideMenu : ComponentBase
                                                 Easing = new CubicEaseOut() // (可选) 缓动效果：一开始快，快结束时慢
                                             }
                                         })
-                                        .Angle(new Binding(nameof(MenuNode.StretchState))
-                                        {
-                                            Source = parentNode,
-                                            Converter = new FuncValueConverter<bool, double>(expanded =>
-                                                expanded ? 180 : 0)
-                                        })
                                 ))
                     ),
                 // B. 子节点渲染为：缩进的按钮列表
                 new StackPanel()
                     .Margin(20, 0, 0, 0) // 🔥 关键：左侧缩进 20px，体现层级
-                    .IsVisible(new Binding(nameof(MenuNode.StretchState)) { Source = parentNode })
+                    .IsVisible(new Binding(nameof(NavNode.StretchState)) { Source = parentNode })
                     .Children(
                         parentNode.Children.Select(childNode =>
                             new Button()
                                 .Content(childNode.Name)
                                 .HorizontalAlignment(HorizontalAlignment.Stretch) // 让按钮横向填满
                                 .HorizontalContentAlignment(HorizontalAlignment.Left) // 文字靠左
-                                .Background(Brushes.Transparent) // 样式微调：透明背景
+                                .Background(new Binding(nameof(SideMenuVm.SelectItemId))
+                                    {
+                                        Converter = new FuncValueConverter<string, IBrush>(selectId =>
+                                            childNode.Id == selectId ? Brushes.DarkCyan : Brushes.Transparent),
+                                    }
+                                ) // 样式微调：透明背景
                                 .OnClick(_ =>
                                 {
-                                    Console.WriteLine(
-                                        $"{childNode.Name}  item click ...childNode.NavKey()?: {childNode.NavKey()}");
                                     // 🔥 点击触发动作
-                                    if (childNode.Action != null)
-                                    {
-                                        // 这里执行工厂方法创建 View
-                                        // Router.Navigate(view);
-                                        ZNavigator.Instance.SwitchTo(() => childNode.Action(), childNode.NavKey());
-                                    }
+                                    if (childNode.Action == null) return;
+                                    _vm.SelectItemId = childNode.Id; // 被选中的,  背景色改变
+                                    ZNavigator.Instance.SwitchTo(childNode.Action, childNode.Id);
                                 })
                         ).ToArray<Control>()
                     )
