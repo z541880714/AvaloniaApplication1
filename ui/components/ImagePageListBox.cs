@@ -4,28 +4,35 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.Data.Converters;
 using Avalonia.Markup.Declarative;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using AvaloniaApplication1.copilot;
 
 namespace AvaloniaApplication1.ui.components;
 
 public class ImagePageListBox : ComponentBase
 {
-    private ImagePageVm _vm = new();
+    private readonly ImagePageVm _vm = new();
+    private readonly ZLruCache<string, Bitmap> _lruCache = new(200, it => it.Dispose());
 
     protected override object Build()
     {
         return new ListBox()
             .ItemsSource(new Binding(nameof(ImagePageVm.PathList)) { Source = _vm })
-            .ItemTemplate(new FuncDataTemplate<ImageData>(
-                (imageData, ns) => new AsyncImageView()
+            .ItemTemplate(new FuncDataTemplate<ImageData>((imageData, ns) => new Image()
                 {
                     // 必须用 Binding(".")，这样 DataContext 切换时，SourceUri 才会自动变
-                    [!AsyncImageView.SourceUriProperty] = new Binding(nameof(ImageData.Path))
-                }.Height(200),
-                // 2. 🔥🔥🔥 关键：开启复用 🔥🔥🔥
-                supportsRecycling: true
+                    [!Image.SourceProperty] = new Binding(nameof(ImageData.Path))
+                    {
+                        Source = imageData,
+                        Converter = new FuncValueConverter<string, Bitmap>(it =>
+                        {
+                            return _lruCache.GetOrAdd(it, ImageHelper.BitmapFactory);
+                        })
+                    },
+                }.Height(50)
             ));
     }
 }

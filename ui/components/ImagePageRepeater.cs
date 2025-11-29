@@ -1,14 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Layout;
 using Avalonia.Markup.Declarative;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 
 namespace AvaloniaApplication1.ui.components;
 
@@ -27,7 +22,7 @@ public class ImagePageRepeater : ComponentBase
                     {
                         MinItemWidth = 200,
                         MinItemHeight = 200,
-                        ItemsStretch = UniformGridLayoutItemsStretch.Fill,
+                        ItemsStretch = UniformGridLayoutItemsStretch.Uniform,
                         MaximumRowsOrColumns = 3,
                         MinColumnSpacing = 10,
                     },
@@ -37,8 +32,20 @@ public class ImagePageRepeater : ComponentBase
                         { Source = _vm },
 
                     ItemTemplate = new FuncDataTemplate<ImageData>((data, ns) =>
-                        new AsyncImageView()
-                            .BindSource(data)
+                        new Grid()
+                            {
+                                RowSpacing = 10,
+                                ColumnSpacing = 10,
+                            }
+                            .Rows("*,*")
+                            .Children(
+                                new AsyncImageView()
+                                    .Row(0)
+                                    .BindSource(data),
+                                new TextBlock()
+                                    .Row(1)
+                                    .Text(new Binding(nameof(ImageData.Name)))
+                            )
                     )
                 }
             );

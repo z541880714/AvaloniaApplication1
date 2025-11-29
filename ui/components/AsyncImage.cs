@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -6,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -17,6 +17,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using AvaloniaApplication1.copilot;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AvaloniaApplication1.ui.components;
@@ -30,11 +31,6 @@ internal partial class AsyncImageState : ObservableObject
     [ObservableProperty] private bool _hasError;
     [ObservableProperty] private Bitmap? _loadedBitmap;
     [ObservableProperty] private string? _errorMessage;
-}
-
-public partial class ImageData : ObservableObject
-{
-    [ObservableProperty] private string _path;
 }
 
 /// <summary>
@@ -51,6 +47,9 @@ public class AsyncImageView : TemplatedControl
     // 静态 HttpClient 复用 (避免端口耗尽)
     private static readonly HttpClient HttpClient = new();
 
+    private static ZLruCache<string, Bitmap> _zLruCache = new(200, it => it.Dispose());
+
+
     #region Avalonia Properties (对外公开的属性)
 
     // 1. 图片源地址 (支持 http://, https://, avares://, 本地路径)
@@ -65,7 +64,7 @@ public class AsyncImageView : TemplatedControl
 
     public AsyncImageView BindSource(ImageData imageData)
     {
-        Bind(SourceUriProperty, new Binding(nameof(ImageData.Path)) { Source = imageData });
+        Bind(SourceUriProperty, new Binding(nameof(ImageData.Path)));
         return this;
     }
 
@@ -187,31 +186,11 @@ public class AsyncImageView : TemplatedControl
             );
     }
 
-
-    // 在 AsyncImageView 类中添加：
-    protected override void OnDataContextChanged(EventArgs e)
-    {
-        base.OnDataContextChanged(e);
-
-        // 🔥 打印出来看看，到底是啥？
-        var dataType = DataContext?.GetType().Name ?? "NULL";
-        var dataValue = DataContext?.ToString() ?? "NULL";
-
-        Console.WriteLine($"[监控] DataContext 变了! dataType: {dataType}, dataValue: {dataValue}");
-        if (DataContext is ImageData imageData)
-        {
-            Console.WriteLine($"url: {imageData.Path}");
-        }
-    }
-
     /// <summary>
     /// 当 SourceUri 发生变化时触发
     /// </summary>
     private void OnSourceUriChanged(string? newUri)
     {
-        Console.WriteLine($"[AsyncImageView] OnSourceUriChanged: {newUri}");
-        if (string.IsNullOrEmpty(newUri)) return;
-
         // 1. 取消之前的任务
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
@@ -237,31 +216,10 @@ public class AsyncImageView : TemplatedControl
             try
             {
                 bitmap = await LoadImageAsync(newUri, token);
-                Console.WriteLine($"[AsyncImageView] Loaded bitmap token state: {token.IsCancellationRequested}");
-
-                // 如果任务被取消了，就不要更新 UI
-                if (token.IsCancellationRequested)
-                {
-                    bitmap?.Dispose();
-                    return;
-                }
-
-                // 切回 UI 线程更新成功状态
                 Dispatcher.UIThread.Post(() =>
                 {
-                    if (bitmap == null) return;
-
-                    if (token.IsCancellationRequested)
-                    {
-                        bitmap?.Dispose();
-                        return;
-                    }
-
-
-                    var old = _state.LoadedBitmap;
-                    _state.LoadedBitmap = null; // 先摘除
-                    old?.Dispose(); // 再销毁
-
+                    if (token.IsCancellationRequested) return;
+                    // 切回 UI 线程更新成功状态
                     _state.LoadedBitmap = bitmap;
                     _state.IsLoading = false;
                 });
@@ -279,14 +237,16 @@ public class AsyncImageView : TemplatedControl
                                       $"token cancelState: ${token.IsCancellationRequested}");
                 }
 
+                _state.ErrorMessage = ex.Message;
+                _state.HasError = true;
+                _state.IsLoading = false;
                 // 切回 UI 线程更新失败状态
-                Dispatcher.UIThread.Post(() =>
-                {
-                    Console.WriteLine($"[AsyncImageView] Error loading {newUri}: {ex.Message}");
-                    _state.ErrorMessage = ex.Message;
-                    _state.HasError = true;
-                    _state.IsLoading = false;
-                });
+                // Dispatcher.UIThread.Post(() =>
+                // {
+                //     _state.ErrorMessage = ex.Message;
+                //     _state.HasError = true;
+                //     _state.IsLoading = false;
+                // });
             }
         }, token);
     }
@@ -325,9 +285,6 @@ public class AsyncImageView : TemplatedControl
         // await Task.Delay(200, token);
         if (!File.Exists(uri)) throw new FileNotFoundException($"Path not found: {uri}");
 
-        // 使用 File.OpenRead 打开流 (比 ReadAllBytes 省内存，因为不用一次性把文件读进 C# 数组)
-        using var fileStream = new FileStream(uri, FileMode.Open, FileAccess.Read, FileShare.Read);
-        // 这个方法会立即读取流，生成 Bitmap，然后 fileStream 就会被 using 关闭 (释放文件锁)
-        return Bitmap.DecodeToWidth(fileStream, 400);
+        return _zLruCache.GetOrAdd(uri, ImageHelper.BitmapFactory);
     }
 }

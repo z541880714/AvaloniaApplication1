@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,26 +11,43 @@ using AvaloniaApplication1.copilot;
 
 namespace AvaloniaApplication1.ui.components;
 
+public partial class ImageData : ObservableObject
+{
+    [ObservableProperty] private string _path;
+    [ObservableProperty] private string _name;
+
+
+    public override string ToString()
+    {
+        return Path;
+    }
+}
+
 public partial class ImagePageVm : ObservableObject
 {
     private string _imgDir = @"D:\__4_scrawl\images";
     [ObservableProperty] ObservableCollection<ImageData> _pathList = new();
+    private readonly Channel<bool> _signalChannel = Channel.CreateBounded<bool>(1);
 
     public ImagePageVm()
     {
-        Task.Run(async () =>
+        Task.Run(InitializeAsync);
+    }
+
+    private async Task InitializeAsync()
+    {
+        var imgPathList = GetFilePathList("*.jpg");
+        // 切回 UI 线程添加数据
+        ZAsync.PostToUi(() =>
         {
-            await Task.Delay(1000);
-            // dir:  
-            var imgPathList = GetFilePathList("*.jpg");
-            ZAsync.PostToUi(() =>
+            foreach (var path in imgPathList)
             {
-                foreach (var path in imgPathList)
-                {
-                    _pathList.Add(new ImageData { Path = path });
-                }
-            });
+                PathList.Add(new ImageData { Path = path, Name = Path.GetFileNameWithoutExtension(path) });
+            }
+
+            _signalChannel.Writer.TryWrite(true);
         });
+        await _signalChannel.Reader.ReadAsync();
     }
 
     private List<string> GetFilePathList(string searchPattern = "*.*")
