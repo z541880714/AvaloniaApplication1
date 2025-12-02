@@ -1,4 +1,5 @@
 mod coroutineSample;
+mod test;
 
 use my_rust_lib::{free_image_result, resize_image_keep_aspect};
 use std::ffi::CString;
@@ -38,6 +39,3 @@ pub struct TaskResult {
     pub status: String,
 }
 
-fn runApiBatch() {
-    let img_dir = "D:\\__4_scrawl\\images";
-}

@@ -11,6 +11,7 @@ pub struct ImageResult {
     pub width: c_int,
     pub height: c_int,
 }
+unsafe impl Send for ImageResult {}
 
 #[unsafe(no_mangle)]
 pub extern "C" fn resize_image_keep_aspect(

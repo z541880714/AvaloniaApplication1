@@ -1,7 +1,10 @@
-﻿use rayon::prelude::*;
+﻿use my_rust_lib::{free_image_result, resize_image_keep_aspect};
+use rayon::prelude::*;
+use std::ffi::CString;
 use std::fs;
 use std::path::Path;
-use walkdir::WalkDir;
+
+use walkdir::{DirEntry, WalkDir};
 
 /// 使用 #[repr(C)] 养成好习惯，虽然 String 不能直接传给 C# (需要转指针)，
 /// 但这里的 u64 和 bool 是标准的，C# 可以直接识别。
@@ -14,15 +17,25 @@ pub struct FileProcessResult {
     pub message: String,
 }
 
-pub fn scan_and_process(root_dir: &str) -> Vec<FileProcessResult> {
-    println!("Scanning... 开始扫描文件夹: {}", root_dir);
-
-    let entries: Vec<_> = WalkDir::new(root_dir)
+pub fn collect_dir_files(dir: &str) -> Vec<DirEntry> {
+    WalkDir::new(dir)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.file_type().is_file()) // 只保留文件，不要文件夹
-        .filter(|e| e.file_name().to_str().unwrap().ends_with(".jpg"))
-        .collect();
+        .filter(|e| {
+            e.file_name()
+                .to_str()
+                .unwrap()
+                .to_lowercase()
+                .ends_with(".jpg")
+        })
+        .collect()
+}
+
+pub fn scan_and_process(root_dir: &str) -> Vec<FileProcessResult> {
+    println!("Scanning... 开始扫描文件夹: {}", root_dir);
+
+    let entries: Vec<_> = collect_dir_files(root_dir);
 
     println!(
         ">>> 阶段1完成: 找到 {} 个文件。开始并发执行...",
@@ -69,17 +82,45 @@ pub fn execute_task_on_file(path: &Path) -> FileProcessResult {
 // -----------------------------------------
 #[cfg(test)]
 mod tests {
+    use my_rust_lib::ImageResult;
+    use std::ffi::{CStr, CString};
     // 这一行很重要：引入父模块的所有内容，
     // 这样你才能在测试里调用上面的 add 或 is_even
     use super::*;
 
     #[test]
     fn test_add_works() {
-        let image_dir = Path::new("D:\\__4_scrawl\\images");
+        let image_dir = Path::new("D:/ztemp/2023每月新图");
         let result = scan_and_process(image_dir.to_str().unwrap());
         for it in &result {
             println!("{:?}", it);
         }
         println!("result size: {}", result.len());
+    }
+
+    #[test]
+    fn test_resize_images() {
+        let root_dir = "D:/ztemp/2023每月新图".to_string();
+        let files = collect_dir_files(&root_dir);
+
+        for it in &files {
+            let path = it.path().to_str().unwrap();
+            println!("{:?}", path);
+            // let c_path = CString::new(path).unwrap();
+            // resize_image_keep_aspect(c_path.as_ptr(), 400);
+        }
+
+        let result: Vec<ImageResult> = files
+            .par_iter()
+            .map(|x| {
+                let path = x.path().to_str().unwrap();
+                let c_path = CString::new(path).unwrap();
+                resize_image_keep_aspect(c_path.as_ptr(), 400)
+            })
+            .collect();
+
+        for it in &result {
+            println!("size: {}*{}", it.width, it.height)
+        }
     }
 }
