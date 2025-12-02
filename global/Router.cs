@@ -21,7 +21,7 @@ public class Router
 
         new("2-视觉渲染", children:
         [
-            new("2-1", action: () => new NativeTest(), isMain: true),
+            new("native_test", action: () => new NativeTest(), isMain: true),
             new("2-2", action: () => new HomeComponent("2-1")),
             new("2-3", action: () => new HomeComponent("2-2")),
             new("2-4", action: () => new HomeComponent("2-3")),

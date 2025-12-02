@@ -1,15 +1,15 @@
-use image::imageops::FilterType;
-use std::ffi::{CStr, CString};
-use std::os::raw::{c_char, c_int, c_uchar};
-use std::ptr;
-use std::ptr::null_mut;
+mod coroutineSample;
+
+use my_rust_lib::{free_image_result, resize_image_keep_aspect};
+use std::ffi::CString;
 use std::time::Instant;
-use my_rust_lib::{resize_image_keep_aspect, free_image_result};
 
 fn main() {
-    println!("Hello, world!");
+    runLibApi();
+}
 
-    let path = "D:\\FreightStation\\pictures\\beauti\\415461.jpg";
+fn runLibApi() {
+    let path = "res\\001.jpg";
     let c_path = CString::new(path).unwrap();
 
     let start = Instant::now();
@@ -29,4 +29,15 @@ fn main() {
             free_image_result(img.data_ptr, img.data_len);
         }
     }
+}
+
+#[derive(Debug)]
+pub struct TaskResult {
+    pub file_path: String,
+    pub data_len: usize,
+    pub status: String,
+}
+
+fn runApiBatch() {
+    let img_dir = "D:\\__4_scrawl\\images";
 }

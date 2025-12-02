@@ -8,7 +8,7 @@ public class TestVm : ObservableObject
 {
     public void TestNativeMethod()
     {
-        string imgPath = @"D:\FreightStation\pictures\beauti\美女105650373.jpg";
+        string imgPath = @"assets\imgs\001.jpg";
         var ret = RustLibNativeMethods.resize_image_keep_aspect(imgPath, 400);
         Console.WriteLine($"img size {ret.Width}x{ret.Height}");
         RustLibNativeMethods.free_image_result(ret.DataPtr, ret.DataLen);

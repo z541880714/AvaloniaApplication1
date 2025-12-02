@@ -6,7 +6,7 @@ use std::ptr;
 // #[repr(C)] 保证 C# 和 Rust 的内存布局一致
 #[repr(C)]
 pub struct ImageResult {
-    pub data_ptr: *mut c_uchar,
+    pub data_ptr: *mut u8,
     pub data_len: c_int,
     pub width: c_int,
     pub height: c_int,

@@ -19,7 +19,8 @@ public partial class NavNode : ObservableObject
 
     [ObservableProperty] private bool _stretchState = false;
 
-    public NavNode(string name,
+    public NavNode(
+        string name,
         bool isMain = false,
         MenuAction? action = null,
         List<NavNode>? children = null)

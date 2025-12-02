@@ -46,4 +46,19 @@
     <ItemGroup>
         <AvaloniaResource Include="assets\app.ico"/>
     </ItemGroup>
+
+
+    <Target Name="CopyRustDlls" AfterTargets="Build">
+        <ItemGroup>
+            <RustLibs Condition="'$(Configuration)' == 'Debug'"
+                      Include="my_rust_lib\target\debug\*.dll"/>
+            <RustLibs Condition="'$(Configuration)' == 'Release'"
+                      Include="my_rust_lib\target\release\*.dll"/>
+        </ItemGroup>
+
+        <Copy SourceFiles="@(RustLibs)"
+              DestinationFolder="$(OutDir)"
+              SkipUnchangedFiles="true"/>
+    </Target>
+
 </Project>

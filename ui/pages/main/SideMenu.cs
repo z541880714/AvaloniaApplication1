@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Mime;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
@@ -123,7 +124,7 @@ public class SideMenu : ComponentBase
                     .Children(
                         parentNode.Children.Select(childNode =>
                             new Button()
-                                .Content(childNode.Name)
+                                .Content(new TextBlock().Text(childNode.Name))
                                 .HorizontalAlignment(HorizontalAlignment.Stretch) // 让按钮横向填满
                                 .HorizontalContentAlignment(HorizontalAlignment.Left) // 文字靠左
                                 .Background(new Binding(nameof(SideMenuVm.SelectItemId))
